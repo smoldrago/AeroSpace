@@ -1,0 +1,11 @@
+name: agent-session tests
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@v4
+      - run: swift test --filter AgentSessionCommandTest
