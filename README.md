@@ -24,6 +24,17 @@ Docs:
 - Doesn't require disabling SIP (System Integrity Protection)
 - [Proper multi-monitor support](https://nikitabobko.github.io/AeroSpace/guide#multiple-monitors) (i3-like paradigm)
 
+## Agent session routing in this fork
+
+This fork adds `aerospace agent-session bind|claim|unbind` to route windows of a
+newly launched process to a session workspace. It does not route tabs in an
+existing browser process. See [the command documentation](docs/aerospace-agent-session.adoc).
+The matching AeroSpace app **and CLI** must both be installed; the upstream
+Homebrew build below does not contain this feature. A manually triggered
+`agent-session build` workflow packages a signed-for-local-use app and CLI.
+Replacing a running window manager can rearrange open windows; do this only
+when it is safe to interrupt the current desktop.
+
 ## Installation
 
 Install via [Homebrew](https://brew.sh/) to get autoupdates (Preferred)
