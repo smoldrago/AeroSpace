@@ -19,15 +19,28 @@ final class MacWindow: Window {
     static func getOrRegister(windowId: UInt32, macApp: MacApp) async throws -> MacWindow {
         if let existing = allWindowsMap[windowId] { return existing }
         let rect = try await macApp.getAxRect(windowId, .cancellable)
-        let data = try await unbindAndGetBindingDataForNewWindow(
+        var sessionWorkspace = AgentSessionRouting.workspaceName(for: macApp)
+        var data = try await unbindAndGetBindingDataForNewWindow(
             windowId,
             macApp,
-            isStartup
-                ? (rect?.center.monitorApproximation ?? mainMonitorInfo).activeWorkspace
-                : focus.workspace,
+            sessionWorkspace.map(Workspace.get(byName:)) ??
+                (isStartup ? (rect?.center.monitorApproximation ?? mainMonitorInfo).activeWorkspace : focus.workspace),
             window: nil,
             .cancellable,
         )
+        // A claim/unbind can happen during the AX request above. Resolve the final owner
+        // before the synchronous registration section rather than using a stale destination.
+        while sessionWorkspace != AgentSessionRouting.workspaceName(for: macApp) {
+            sessionWorkspace = AgentSessionRouting.workspaceName(for: macApp)
+            data = try await unbindAndGetBindingDataForNewWindow(
+                windowId,
+                macApp,
+                sessionWorkspace.map(Workspace.get(byName:)) ??
+                    (isStartup ? (rect?.center.monitorApproximation ?? mainMonitorInfo).activeWorkspace : focus.workspace),
+                window: nil,
+                .cancellable,
+            )
+        }
 
         // atomic synchronous section
         if let existing = allWindowsMap[windowId] { return existing }
@@ -35,8 +48,18 @@ final class MacWindow: Window {
         allWindowsMap[windowId] = window
 
         try await debugWindowsIfRecording(window, .cancellable)
-        if try await !restoreClosedWindowsCacheIfNeeded(newlyDetectedWindow: window) {
+        if AgentSessionRouting.workspaceName(for: macApp) != nil {
             await tryOnWindowDetected(window)
+        } else if try await !restoreClosedWindowsCacheIfNeeded(newlyDetectedWindow: window) {
+            await tryOnWindowDetected(window)
+        }
+        // Session placement takes precedence over an on-window-detected callback and over
+        // a closed-window cache restoration that raced with claim.
+        if let workspaceName = AgentSessionRouting.workspaceName(for: macApp), window.nodeWorkspace != nil {
+            let workspace = Workspace.get(byName: workspaceName)
+            if window.nodeWorkspace !== workspace {
+                _ = moveWindowToWorkspace(window, workspace, CmdIoImpl.emptyStdinIgnoringOut, focusFollowsWindow: false, failIfNoop: false)
+            }
         }
         return window
     }

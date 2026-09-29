@@ -1,0 +1,55 @@
+= aerospace-agent-session(1)
+include::util/man-attributes.adoc[]
+:manname: aerospace-agent-session
+// tag::purpose[]
+:manpurpose: Route windows of a newly launched process to a session workspace
+// end::purpose[]
+
+// =========================================================== Synopsis
+== Synopsis
+[verse]
+// tag::synopsis[]
+aerospace agent-session [-h|--help] bind <session-id> <workspace>
+aerospace agent-session [-h|--help] claim <session-id> <pid>
+aerospace agent-session [-h|--help] unbind <session-id>
+
+// end::synopsis[]
+
+// =========================================================== Description
+== Description
+
+// tag::body[]
+{manpurpose}
+
+`bind` records the workspace for a session. Bind *before* launching the application process.
+Rebinding the same session to the same workspace is harmless; changing the workspace requires `unbind` first.
+
+`claim` associates a running application process with a bound session. The process must have started
+*after* the bind, and its start time must be available. A process already running when the session was
+bound cannot be claimed, even if it opened new windows afterward. A PID claimed by another session
+cannot be claimed again for that process lifetime. AeroSpace routes already-detected windows of the
+claimed process and future detected windows to the bound workspace without changing focus.
+Process identity is checked on window detection so reused PIDs do not inherit claims.
+Only windows of the claimed process are affected; this is not an app-name or bundle-ID rule.
+
+`unbind` removes the binding and its claims. Already-moved windows remain where they are;
+subsequent windows use normal AeroSpace placement. Bindings are in-memory and must be established
+again after AeroSpace restarts. Applications that reuse an existing shared process cannot be claimed
+for a new session: launch a separate process or use an application that creates one.
+
+// =========================================================== Options
+include::./util/conditional-options-header.adoc[]
+
+-h, --help:: Print help
+
+// =========================================================== Arguments
+include::./util/conditional-arguments-header.adoc[]
+
+<session-id>:: Opaque, nonempty identifier for the agent session
+<workspace>:: Destination workspace name
+<pid>:: Positive decimal process ID of the newly launched application process
+
+// end::body[]
+
+// =========================================================== Footer
+include::util/man-footer.adoc[]

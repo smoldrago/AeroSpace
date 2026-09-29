@@ -2,6 +2,7 @@
 // TO REGENERATE THE FILE RUN generate.sh
 
 let subcommandDescriptions = [
+    ["  agent-session", "Route windows of a newly launched process to a session workspace"],
     ["  balance-sizes", "Balance sizes of all windows in the current workspace"],
     ["  close-all-windows-but-current", "On the focused workspace, close all windows but current"],
     ["  close", "Close the focused window"],

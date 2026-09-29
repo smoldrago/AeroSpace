@@ -5,6 +5,13 @@ include::util/header.adoc[]
 
 Commands documentation is also available as manpages.
 
+== agent-session
+----
+include::aerospace-agent-session.adoc[tags=synopsis]
+----
+include::aerospace-agent-session.adoc[tags=purpose]
+include::aerospace-agent-session.adoc[tags=body]
+
 == balance-sizes
 ----
 include::aerospace-balance-sizes.adoc[tags=synopsis]

@@ -1,6 +1,11 @@
 // FILE IS GENERATED FROM docs/aerospace-*.adoc files
 // TO REGENERATE THE FILE RUN generate.sh
 
+let agent_session_help_generated = """
+    USAGE: agent-session [-h|--help] bind <session-id> <workspace>
+       OR: agent-session [-h|--help] claim <session-id> <pid>
+       OR: agent-session [-h|--help] unbind <session-id>
+    """
 let balance_sizes_help_generated = """
     USAGE: balance-sizes [-h|--help] [--workspace <workspace>]
     """
